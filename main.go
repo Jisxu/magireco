@@ -41,7 +41,7 @@ func main() {
 		if info.StartAt == timeStr {
 			temp := model.HtmlStruct{}
 			info.Text = strings.ReplaceAll(info.Text, "data-src='",
-				"data-src='https://android.magi-reco.com/magica/resource/download/asset/master/")
+				"src='https://android.magi-reco.com/magica/resource/download/asset/master/")
 			temp.SubText = info.Subject
 			temp.Text = info.Text
 			htmlArr = append(htmlArr, temp)
