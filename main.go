@@ -9,7 +9,6 @@ import (
 	"magireco/model"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -56,8 +55,7 @@ func main() {
 	}
 	htmlStr += htmltemplate.Footer
 	//写入文件
-	os.Mkdir("output", 0644)
-	err = ioutil.WriteFile("output/index.html", []byte(htmlStr), 0644)
+	err = ioutil.WriteFile("index.html", []byte(htmlStr), 0644)
 	if err != nil {
 		panic(err)
 	}
