@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	useProxy   = true
+	useProxy   = false
 	SocksProxy = "socks5://127.0.0.1:10808"
 )
 
