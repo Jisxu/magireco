@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"magireco/htmltemplate"
 	"magireco/model"
@@ -12,6 +13,7 @@ import (
 )
 
 var (
+	useProxy   = false
 	SocksProxy = "socks5://127.0.0.1:10808"
 )
 
@@ -20,7 +22,10 @@ func main() {
 	domain := "https://android.magi-reco.com/magica/json/announcements/announcements.json"
 	resp, body := httpGet(domain)
 	infos := make([]model.InfoStruct, 0)
-	json.Unmarshal(body, &infos)
+	err := json.Unmarshal(body, &infos)
+	if err != nil {
+		return
+	}
 	if resp.StatusCode == 200 {
 		fmt.Println("ok")
 	}
@@ -50,7 +55,7 @@ func main() {
 	}
 	htmlStr += htmltemplate.Footer
 	//写入文件
-	err := ioutil.WriteFile("index.html", []byte(htmlStr), 0644)
+	err = ioutil.WriteFile("index.html", []byte(htmlStr), 0644)
 	if err != nil {
 		return
 	}
@@ -58,22 +63,37 @@ func main() {
 }
 
 func httpGet(domain string) (*http.Response, []byte) {
-	proxy := func(_ *http.Request) (*url.URL, error) {
-		return url.Parse(SocksProxy)
-	}
-	httpTransport := &http.Transport{
-		Proxy: proxy,
-	}
-	httpclient := &http.Client{
-		Transport: httpTransport,
-	}
+	httpclient := generateHttpClent(useProxy)
 
 	req, err := http.NewRequest("GET", domain, nil)
 	if err != nil {
 		panic(err)
 	}
 	resp, err := httpclient.Do(req)
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 	body, err := ioutil.ReadAll(resp.Body)
 	return resp, body
+}
+
+func generateHttpClent(useProxy bool) *http.Client {
+	if useProxy {
+		proxy := func(_ *http.Request) (*url.URL, error) {
+			return url.Parse(SocksProxy)
+		}
+		httpTransport := &http.Transport{
+			Proxy: proxy,
+		}
+		httpclient := &http.Client{
+			Transport: httpTransport,
+		}
+		return httpclient
+	} else {
+		client := &http.Client{}
+		return client
+	}
 }
