@@ -1,4 +1,4 @@
-package main
+package model
 
 import "fmt"
 
@@ -20,7 +20,7 @@ func String(s *InfoStruct) string {
 	return fmt.Sprintf("[subject=%v\n,text=%v\n,startAt=%v]", s.Subject, s.Text, s.StartAt)
 }
 
-type htmlStruct struct {
-	subText string
-	text    string
+type HtmlStruct struct {
+	SubText string
+	Text    string
 }
