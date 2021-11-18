@@ -1,6 +1,7 @@
 name: Go
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
@@ -22,3 +23,13 @@ jobs:
       run: |
           go build .
           ./magireco
+    - name : Upload
+      uses: actions/upload-artifact@master
+      with:
+        name: index.html
+        path: index.html
+    - name : deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: index.html
