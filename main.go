@@ -9,11 +9,12 @@ import (
 	"magireco/model"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
 var (
-	useProxy   = false
+	useProxy   = true
 	SocksProxy = "socks5://127.0.0.1:10808"
 )
 
@@ -55,9 +56,10 @@ func main() {
 	}
 	htmlStr += htmltemplate.Footer
 	//写入文件
-	err = ioutil.WriteFile("index.html", []byte(htmlStr), 0644)
+	os.Mkdir("output", 0644)
+	err = ioutil.WriteFile("output/index.html", []byte(htmlStr), 0644)
 	if err != nil {
-		return
+		panic(err)
 	}
 	fmt.Println("Finished!Please open index.html")
 }
