@@ -23,3 +23,8 @@ jobs:
       run: |
           go build .
           ./magireco
+    - name : Upload
+      uses: actions/upload-artifact@master
+      with:
+        name: index.html
+        path: index.html
