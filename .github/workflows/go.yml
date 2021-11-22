@@ -23,6 +23,7 @@ jobs:
 
     - name: Build
       run: |
+          date
           go build .
           mkdir output
           ./magireco
