@@ -18,23 +18,44 @@ var (
 )
 
 func main() {
+	announeceRestruct()
+}
+
+func announeceRestruct() {
 	//获取公告json串
-	domain := "https://android.magi-reco.com/magica/json/announcements/announcements.json"
-	resp, body := httpGet(domain)
-	infos := make([]model.InfoStruct, 0)
-	err := json.Unmarshal(body, &infos)
-	if err != nil {
+	infos, err, done := getAnnounceJson()
+	if done {
 		return
 	}
-	if resp.StatusCode == 200 {
-		fmt.Println("ok")
-	}
 	//取最新时间
-	timeArr := make([]string, 0)
-	for _, info := range infos {
-		timeArr = append(timeArr, info.StartAt)
-	}
+	timeArr := getLastTime(infos)
 	//获取并格式化最新公告
+	htmlArr := getHtmlArr(infos, timeArr)
+	//生成html
+	htmlStr := getHtmlStr(htmlArr)
+	//写入文件
+	writeToFile(err, htmlStr)
+	fmt.Println("Finished!Please open index.html")
+}
+
+func writeToFile(err error, htmlStr string) {
+	err = ioutil.WriteFile("index.html", []byte(htmlStr), 0644)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func getHtmlStr(htmlArr []model.HtmlStruct) string {
+	htmlStr := ""
+	htmlStr += htmltemplate.Header
+	for _, html := range htmlArr {
+		htmlStr += fmt.Sprintf(htmltemplate.ContentFormat, html.SubText, html.Text)
+	}
+	htmlStr += htmltemplate.Footer
+	return htmlStr
+}
+
+func getHtmlArr(infos []model.InfoStruct, timeArr []string) []model.HtmlStruct {
 	htmlArr := make([]model.HtmlStruct, 0)
 	for _, info := range infos {
 		timeStr := timeArr[len(timeArr)-1]
@@ -47,19 +68,29 @@ func main() {
 			htmlArr = append(htmlArr, temp)
 		}
 	}
-	//生成html
-	htmlStr := ""
-	htmlStr += htmltemplate.Header
-	for _, html := range htmlArr {
-		htmlStr += fmt.Sprintf(htmltemplate.ContentFormat, html.SubText, html.Text)
+	return htmlArr
+}
+
+func getLastTime(infos []model.InfoStruct) []string {
+	timeArr := make([]string, 0)
+	for _, info := range infos {
+		timeArr = append(timeArr, info.StartAt)
 	}
-	htmlStr += htmltemplate.Footer
-	//写入文件
-	err = ioutil.WriteFile("index.html", []byte(htmlStr), 0644)
+	return timeArr
+}
+
+func getAnnounceJson() ([]model.InfoStruct, error, bool) {
+	domain := "https://android.magi-reco.com/magica/json/announcements/announcements.json"
+	resp, body := httpGet(domain)
+	infos := make([]model.InfoStruct, 0)
+	err := json.Unmarshal(body, &infos)
 	if err != nil {
-		panic(err)
+		return nil, nil, true
 	}
-	fmt.Println("Finished!Please open index.html")
+	if resp.StatusCode == 200 {
+		fmt.Println("ok")
+	}
+	return infos, err, false
 }
 
 func httpGet(domain string) (*http.Response, []byte) {
